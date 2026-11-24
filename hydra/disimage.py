@@ -1,6 +1,6 @@
 """
 Disimage Terminal Graphics Engine
-Pure-Python 24-bit TrueColor rasterizer and PNG stream encoder.
+Pure-Python 24-bit TrueColor rasterizer, PNG stream encoder, and SVG vector generator.
 Supports iTerm2 inline images, Kitty graphics protocol, and ANSI Half-block fallback.
 """
 
@@ -8,6 +8,7 @@ import math
 import zlib
 import struct
 import base64
+from typing import Dict, Any, List
 
 def create_png(width: int, height: int, rgb_buffer: bytearray) -> bytes:
     """Encodes raw RGB bytearray (width * height * 3) into valid PNG bytes."""
@@ -147,3 +148,54 @@ def generate_swarm_radar_image(width: int = 72, height: int = 36, pulse_tick: in
                 set_pixel(nx + dx, ny + dy, cr, cg, cb, 0.95)
 
     return buffer
+
+
+def generate_swarm_svg(width: int = 600, height: int = 400) -> str:
+    """Generates standalone resolution-independent SVG vector visualization of the swarm."""
+    cx = width / 2.0
+    cy = height / 2.0
+    r_max = min(cx, cy) - 40
+
+    nodes = [
+        {"name": "REMY (CORE)", "x": cx, "y": cy, "color": "#ffd700", "role": "Operator"},
+        {"name": "DevTheDude", "x": cx, "y": cy - r_max * 0.65, "color": "#00ffc8", "role": "Architect"},
+        {"name": "Telegram Bot", "x": cx + r_max * 0.8, "y": cy - r_max * 0.35, "color": "#00b4ff", "role": "Mobile Ingress"},
+        {"name": "Slack Bot", "x": cx + r_max * 0.7, "y": cy + r_max * 0.6, "color": "#e01e5a", "role": "Team Canvas"},
+        {"name": "Discord Bot", "x": cx - r_max * 0.7, "y": cy + r_max * 0.6, "color": "#5865f2", "role": "Community"},
+        {"name": "Hermes (Claw)", "x": cx - r_max * 0.8, "y": cy - r_max * 0.35, "color": "#ff8c00", "role": "Agent Presence"},
+    ]
+
+    svg = [
+        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" width="100%" height="100%">',
+        '<defs>',
+        '  <radialGradient id="radarGlow" cx="50%" cy="50%" r="50%">',
+        '    <stop offset="0%" stop-color="#00f0ff" stop-opacity="0.12"/>',
+        '    <stop offset="100%" stop-color="#07090e" stop-opacity="0"/>',
+        '  </radialGradient>',
+        '  <filter id="glow">',
+        '    <feGaussianBlur stdDeviation="3" result="blur"/>',
+        '    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>',
+        '  </filter>',
+        '</defs>',
+        f'<rect width="{width}" height="{height}" fill="#07090e"/>',
+        f'<circle cx="{cx}" cy="{cy}" r="{r_max}" fill="url(#radarGlow)"/>',
+        f'<circle cx="{cx}" cy="{cy}" r="{r_max * 0.35}" fill="none" stroke="rgba(0, 240, 255, 0.2)" stroke-dasharray="4 4"/>',
+        f'<circle cx="{cx}" cy="{cy}" r="{r_max * 0.7}" fill="none" stroke="rgba(0, 240, 255, 0.2)" stroke-dasharray="4 4"/>',
+        f'<circle cx="{cx}" cy="{cy}" r="{r_max}" fill="none" stroke="rgba(0, 240, 255, 0.35)"/>',
+    ]
+
+    # Star rays & mesh
+    for i in range(1, len(nodes)):
+        n = nodes[i]
+        svg.append(f'<line x1="{cx}" y1="{cy}" x2="{n["x"]}" y2="{n["y"]}" stroke="rgba(0, 240, 255, 0.3)" stroke-width="1.5"/>')
+        nxt = nodes[1] if i == len(nodes) - 1 else nodes[i + 1]
+        svg.append(f'<line x1="{n["x"]}" y1="{n["y"]}" x2="{nxt["x"]}" y2="{nxt["y"]}" stroke="rgba(100, 200, 255, 0.15)" stroke-width="1"/>')
+
+    # Nodes
+    for n in nodes:
+        svg.append(f'<circle cx="{n["x"]}" cy="{n["y"]}" r="8" fill="{n["color"]}" filter="url(#glow)"/>')
+        svg.append(f'<text x="{n["x"]}" y="{n["y"] - 14}" fill="#e2e8f0" font-family="system-ui, monospace" font-size="11" font-weight="bold" text-anchor="middle">{n["name"]}</text>')
+        svg.append(f'<text x="{n["x"]}" y="{n["y"] + 20}" fill="#94a3b8" font-family="system-ui, monospace" font-size="9" text-anchor="middle">{n["role"]}</text>')
+
+    svg.append('</svg>')
+    return "\n".join(svg)

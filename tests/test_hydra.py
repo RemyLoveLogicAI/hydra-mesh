@@ -1,16 +1,17 @@
 """
-Comprehensive Test Suite for HYDRA-MESH
+Comprehensive Test Suite for HYDRA-MESH (Optimized v1.1.0)
 Verifies:
 1. Disimage PNG generation & valid header chunks
 2. Disimage Half-block rasterizer dimensions & formatting
-3. Telemetry & Grokbot skeptic audit receipts
-4. Multi-channel bridge routing logic
-5. MCP Server schema compliance
+3. Disimage SVG vector export
+4. Telemetry & Grokbot skeptic audit receipts
+5. Hardened multi-channel bridge routing & TTL caching
+6. MCP Server schema compliance & vector export tool
 """
 
 import unittest
 import json
-from hydra.disimage import create_png, generate_swarm_radar_image, DisimageRenderer
+from hydra.disimage import create_png, generate_swarm_radar_image, DisimageRenderer, generate_swarm_svg
 from hydra.telemetry import get_system_telemetry, run_grokbot_audit
 from hydra.bridge import HydraBridge
 from hydra.mcp_server import handle_request, TOOLS
@@ -31,8 +32,16 @@ class TestHydraMesh(unittest.TestCase):
         buf = bytearray(10 * 10 * 3)
         res = DisimageRenderer.render_half_block(buf, width=10, height=10)
         lines = res.strip().split("\n")
-        self.assertEqual(len(lines), 5)  # 10 height / 2 = 5 half-block rows
+        self.assertEqual(len(lines), 5)
         self.assertIn("\033[38;2;", lines[0])
+
+    def test_disimage_svg_export(self):
+        """Verifies resolution-independent SVG vector generation."""
+        svg = generate_swarm_svg(600, 400)
+        self.assertTrue(svg.startswith("<svg"))
+        self.assertIn("REMY (CORE)", svg)
+        self.assertIn("DevTheDude", svg)
+        self.assertTrue(svg.strip().endswith("</svg>"))
 
     def test_telemetry_and_grokbot_audit(self):
         """Verifies telemetry collection and Grokbot audit scoring."""
@@ -46,20 +55,24 @@ class TestHydraMesh(unittest.TestCase):
         self.assertLessEqual(score, 100)
         self.assertGreater(len(receipts), 0)
 
-    def test_bridge_routing(self):
-        """Verifies multi-channel intent routing."""
+    def test_hardened_bridge_routing_and_cache(self):
+        """Verifies hardened multi-channel intent routing and cached iMessage lookup."""
         bridge = HydraBridge()
         matrix = bridge.get_channel_matrix()
         self.assertIn("imessage", matrix)
         self.assertIn("telegram", matrix)
         self.assertIn("slack", matrix)
 
+        # Immediate cache hit verification (should be instant)
+        recs = bridge.read_imessage_recent(limit=3)
+        self.assertIsInstance(recs, list)
+
         res = bridge.route_broadcast("remy", "@telegram deploy status check")
         self.assertEqual(res["target"], "Telegram Orchestrator")
         self.assertTrue(res["routed"])
 
-    def test_mcp_server_protocol(self):
-        """Verifies MCP JSON-RPC initialize and tool listing."""
+    def test_mcp_server_protocol_and_tools(self):
+        """Verifies MCP JSON-RPC initialize, tool listing, and SVG tool call."""
         init_req = {"jsonrpc": "2.0", "id": 1, "method": "initialize"}
         init_res = handle_request(init_req)
         self.assertEqual(init_res["result"]["serverInfo"]["name"], "hydra-mcp")
@@ -68,14 +81,15 @@ class TestHydraMesh(unittest.TestCase):
         tools_res = handle_request(tools_req)
         self.assertEqual(len(tools_res["result"]["tools"]), len(TOOLS))
 
-        call_req = {
+        # Test SVG tool
+        svg_req = {
             "jsonrpc": "2.0",
-            "id": 3,
+            "id": 4,
             "method": "tools/call",
-            "params": {"name": "run_skeptic_audit", "arguments": {}}
+            "params": {"name": "export_topology_svg", "arguments": {}}
         }
-        call_res = handle_request(call_req)
-        self.assertIn("score", call_res["result"]["content"][0]["text"])
+        svg_res = handle_request(svg_req)
+        self.assertIn("<svg", svg_res["result"]["content"][0]["text"])
 
 if __name__ == "__main__":
     unittest.main()

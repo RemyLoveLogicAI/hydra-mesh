@@ -1,18 +1,21 @@
 """
 HYDRA CLI: Unified Command Line Interface
 Subcommands:
-- status   : Display Disimage graphics and full telemetry snapshot
-- tui      : Run live interactive terminal cockpit
-- audit    : Execute Grokbot reality audit
-- bridge   : Inspect multi-channel status (iMessage, Telegram, Slack)
-- mcp      : Run stdio JSON-RPC MCP server
-- serve    : Run local WebUI dashboard
+- status    : Display Disimage graphics and full telemetry snapshot
+- tui       : Run live interactive terminal cockpit
+- audit     : Execute Grokbot reality audit
+- bridge    : Inspect multi-channel status (iMessage, Telegram, Slack)
+- benchmark : Run Disimage rasterizer FPS and throughput micro-benchmarks
+- export    : Export swarm topology as PNG or SVG vector file
+- mcp       : Run stdio JSON-RPC MCP server
+- serve     : Run local WebUI dashboard
 """
 
 import sys
+import time
 import argparse
 import json
-from hydra.disimage import generate_swarm_radar_image, DisimageRenderer, create_png
+from hydra.disimage import generate_swarm_radar_image, DisimageRenderer, create_png, generate_swarm_svg
 from hydra.telemetry import get_system_telemetry, run_grokbot_audit
 from hydra.bridge import HydraBridge
 from hydra.tui import run_tui
@@ -56,6 +59,37 @@ def cmd_bridge(args):
     matrix = bridge.get_channel_matrix()
     print(json.dumps(matrix, indent=2))
 
+def cmd_benchmark(args):
+    frames = args.frames
+    print(f"\033[1;36m[HYDRA BENCHMARK]\033[0m Running {frames} frames through Disimage Rasterizer...")
+    t0 = time.perf_counter()
+    for tick in range(frames):
+        buf = generate_swarm_radar_image(72, 36, pulse_tick=tick)
+        png = create_png(72, 36, buf)
+        art = DisimageRenderer.render_half_block(buf, 72, 36)
+    t1 = time.perf_counter()
+    elapsed = t1 - t0
+    fps = frames / elapsed
+    ms_frame = (elapsed / frames) * 1000
+    print(f"\033[1;32m✓ COMPLETED\033[0m in {elapsed:.4f}s ({fps:.1f} FPS, {ms_frame:.2f} ms/frame)")
+
+def cmd_export(args):
+    if args.format == "svg":
+        svg_content = generate_swarm_svg()
+        if args.output:
+            with open(args.output, "w") as f:
+                f.write(svg_content)
+            print(f"\033[1;32m✓ Exported SVG to {args.output}\033[0m")
+        else:
+            print(svg_content)
+    elif args.format == "png":
+        buf = generate_swarm_radar_image(160, 80)
+        png = create_png(160, 80, buf)
+        out_path = args.output or "hydra_swarm.png"
+        with open(out_path, "wb") as f:
+            f.write(png)
+        print(f"\033[1;32m✓ Exported PNG ({len(png)} bytes) to {out_path}\033[0m")
+
 def cmd_tui(args):
     run_tui(iterations=args.iterations, delay=args.delay)
 
@@ -78,6 +112,15 @@ def main():
 
     p_bridge = sub.add_parser("bridge", help="Inspect multi-channel connection matrix")
     p_bridge.set_defaults(func=cmd_bridge)
+
+    p_bench = sub.add_parser("benchmark", help="Run Disimage rasterizer performance benchmark")
+    p_bench.add_argument("--frames", type=int, default=100, help="Frames to render")
+    p_bench.set_defaults(func=cmd_benchmark)
+
+    p_export = sub.add_parser("export", help="Export topology diagram to file (SVG/PNG)")
+    p_export.add_argument("--format", choices=["svg", "png"], default="svg", help="Export format")
+    p_export.add_argument("-o", "--output", help="Target output file path")
+    p_export.set_defaults(func=cmd_export)
 
     p_tui = sub.add_parser("tui", help="Launch interactive live TUI cockpit")
     p_tui.add_argument("--iterations", type=int, default=1, help="Max refresh iterations (0 for infinite)")

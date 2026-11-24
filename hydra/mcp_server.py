@@ -5,12 +5,14 @@ Exposes tools:
 - get_swarm_status: Live telemetry, roster, and kernel state
 - run_skeptic_audit: Grokbot reality audit and port hygiene
 - dispatch_action: Direct task injection into the hivemind
+- export_topology_svg: Generates standalone SVG vector visualization of the swarm
 """
 
 import sys
 import json
 from hydra.telemetry import get_system_telemetry, run_grokbot_audit
 from hydra.bridge import HydraBridge
+from hydra.disimage import generate_swarm_svg
 
 TOOLS = [
     {
@@ -42,6 +44,17 @@ TOOLS = [
             },
             "required": ["target", "action"]
         }
+    },
+    {
+        "name": "export_topology_svg",
+        "description": "Returns resolution-independent SVG vector diagram of the active agent swarm.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "width": {"type": "integer", "description": "Canvas width (default 600)"},
+                "height": {"type": "integer", "description": "Canvas height (default 400)"}
+            }
+        }
     }
 ]
 
@@ -56,7 +69,7 @@ def handle_request(req: dict) -> dict:
             "result": {
                 "protocolVersion": "2024-11-05",
                 "capabilities": {"tools": {}},
-                "serverInfo": {"name": "hydra-mcp", "version": "1.0.0"}
+                "serverInfo": {"name": "hydra-mcp", "version": "1.1.0"}
             }
         }
     elif method == "tools/list":
@@ -99,6 +112,15 @@ def handle_request(req: dict) -> dict:
                 "jsonrpc": "2.0",
                 "id": req_id,
                 "result": {"content": [{"type": "text", "text": json.dumps(res, indent=2)}]}
+            }
+        elif tool_name == "export_topology_svg":
+            w = args.get("width", 600)
+            h = args.get("height", 400)
+            svg = generate_swarm_svg(width=w, height=h)
+            return {
+                "jsonrpc": "2.0",
+                "id": req_id,
+                "result": {"content": [{"type": "text", "text": svg}]}
             }
         else:
             return {
