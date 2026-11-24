@@ -1,0 +1,43 @@
+{
+  "product": {
+    "name": "HYDRA-MESH v2.0-QUANTUM — Distributed Agent Hivemind & Disimage Cockpit",
+    "permalink": "hydra-mesh",
+    "price_cents": 4900,
+    "currency": "usd",
+    "require_shipping": false,
+    "custom_summary": "Autonomous multi-channel agent hivemind with 480+ FPS TrueColor terminal rasterizer, Dutch capability auction, Merkle flight recorder, and MCP server.",
+    "tags": [
+      "ai-agents",
+      "python",
+      "terminal",
+      "macos",
+      "hivemind",
+      "openbot",
+      "swiftui",
+      "cli",
+      "cockpit",
+      "mcp"
+    ],
+    "custom_receipt": "Thank you for acquiring HYDRA-MESH v2.0-QUANTUM! Extract the bundle: tar -xzf hydra-mesh-2.0.0.tar.gz && cd hydra-mesh && ./bin/hydra status",
+    "files": [
+      "dist/hydra-mesh-2.0.0.tar.gz"
+    ],
+    "tiers": [
+      {
+        "name": "Developer License",
+        "price_cents": 2900,
+        "description": "Full source code, CLI cockpit, Disimage rasterizer, and MCP server for personal development."
+      },
+      {
+        "name": "Pro Studio License",
+        "price_cents": 4900,
+        "description": "Complete bundle including iOS SwiftUI view, macOS Menu Bar Extra, Launchd daemon, and Dutch auction engine."
+      },
+      {
+        "name": "Enterprise Hivemind",
+        "price_cents": 14900,
+        "description": "Full commercial license, Merkle flight recorder, Triadic dialectical consensus engine, and nocturnal dreamer mutation pipeline."
+      }
+    ]
+  }
+}
