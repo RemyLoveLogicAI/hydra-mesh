@@ -46,19 +46,36 @@ class DisimageRenderer:
 
     @staticmethod
     def render_half_block(rgb_buffer: bytearray, width: int, height: int) -> str:
-        """Universal 24-bit ANSI TrueColor half-block rasterizer."""
+        """Universal 24-bit ANSI TrueColor half-block rasterizer with run-length color state compression."""
         out = []
         for y in range(0, height, 2):
             line = []
+            cur_r1 = cur_g1 = cur_b1 = -1
+            cur_r2 = cur_g2 = cur_b2 = -1
+            row1_off = y * width * 3
+            has_second = (y + 1 < height)
+            row2_off = (y + 1) * width * 3 if has_second else 0
+
             for x in range(width):
-                top_idx = (y * width + x) * 3
-                r1, g1, b1 = rgb_buffer[top_idx], rgb_buffer[top_idx + 1], rgb_buffer[top_idx + 2]
-                if y + 1 < height:
-                    bot_idx = ((y + 1) * width + x) * 3
-                    r2, g2, b2 = rgb_buffer[bot_idx], rgb_buffer[bot_idx + 1], rgb_buffer[bot_idx + 2]
+                off1 = row1_off + x * 3
+                r1, g1, b1 = rgb_buffer[off1], rgb_buffer[off1 + 1], rgb_buffer[off1 + 2]
+                if has_second:
+                    off2 = row2_off + x * 3
+                    r2, g2, b2 = rgb_buffer[off2], rgb_buffer[off2 + 1], rgb_buffer[off2 + 2]
                 else:
                     r2, g2, b2 = 0, 0, 0
-                line.append(f"\033[38;2;{r1};{g1};{b1}m\033[48;2;{r2};{g2};{b2}m▀\033[0m")
+
+                if r1 != cur_r1 or g1 != cur_g1 or b1 != cur_b1:
+                    line.append(f"\033[38;2;{r1};{g1};{b1}m")
+                    cur_r1, cur_g1, cur_b1 = r1, g1, b1
+
+                if r2 != cur_r2 or g2 != cur_g2 or b2 != cur_b2:
+                    line.append(f"\033[48;2;{r2};{g2};{b2}m")
+                    cur_r2, cur_g2, cur_b2 = r2, g2, b2
+
+                line.append("▀")
+
+            line.append("\033[0m")
             out.append("".join(line))
         return "\n".join(out) + "\n"
 

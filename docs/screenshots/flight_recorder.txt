@@ -1,0 +1,2 @@
+[1;42;30m SECURE [0m Merkle Flight Log: 6/6 events valid (100.0%)
+  [1mMerkle Root:[0m [1;33m8ac0b7cb900f2ed5e8b6cb0b4681939b0678724cb6d0d69fabeb770218cdd107[0m

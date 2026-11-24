@@ -1,0 +1,11 @@
+[1;36m[CAPABILITY AUCTION][0m Task: Refactor Disimage IPC to POSIX Shared Memory
+  [1mWinning Agent:[0m [1;32mDevTheDude[0m (agent-5e72212f)
+  [1mLease Hash:[0m [38;5;244mf951a1eba8c42925aa105d7def92c62d39d74c8bd351842b70cc61fdcabd4652[0m
+  [1mBid Score:[0m 6.44 (Est Latency: 15ms, Cost: 1200t)
+
+[1;34m── Competing Bids ──[0m
+  • DevTheDude             : Score 6.44   | Affinity 0.85 | Latency 15ms
+  • Telegram Orchestrator  : Score 3.12   | Affinity 0.35 | Latency 19ms
+  • Discord Orchestrator   : Score 2.84   | Affinity 0.35 | Latency 20ms
+  • Slack Orchestrator     : Score 2.6    | Affinity 0.35 | Latency 21ms
+  • Hermes                 : Score 1.45   | Affinity 0.35 | Latency 37ms

@@ -115,5 +115,26 @@ class TestHydraMeshQuantum(unittest.TestCase):
         tools_res = handle_request(tools_req)
         self.assertEqual(len(tools_res["result"]["tools"]), 7)
 
+    def test_merkle_inclusion_proof_verification(self):
+        from hydra.flight_recorder import sha256_hex
+        leaves = [sha256_hex(f"leaf_{i}") for i in range(7)]
+        tree = MerkleTree(leaves)
+        self.assertEqual(len(tree.root), 64)
+        for i in range(len(leaves)):
+            proof = tree.get_inclusion_proof(i)
+            self.assertTrue(MerkleTree.verify_inclusion_proof(leaves[i], proof, tree.root))
+        # Tampered leaf should fail verification
+        tampered_leaf = sha256_hex("tampered_leaf")
+        self.assertFalse(MerkleTree.verify_inclusion_proof(tampered_leaf, proof, tree.root))
+
+    def test_disimage_compressed_half_block_rasterizer(self):
+        buf = generate_swarm_radar_image(width=16, height=8)
+        res = DisimageRenderer.render_half_block(buf, width=16, height=8)
+        self.assertTrue(res.endswith("\033[0m\n"))
+        self.assertIn("▀", res)
+        # Verify line count
+        lines = res.strip().split("\n")
+        self.assertEqual(len(lines), 4)
+
 if __name__ == "__main__":
     unittest.main()

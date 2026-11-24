@@ -40,6 +40,38 @@ class MerkleTree:
     def root(self) -> str:
         return self.layers[-1][0] if self.layers and self.layers[-1] else sha256_hex("EMPTY")
 
+    def get_inclusion_proof(self, leaf_index: int) -> List[Dict[str, Any]]:
+        """Generates an O(log N) inclusion audit path for a given leaf index."""
+        if not (0 <= leaf_index < len(self.leaves)):
+            raise IndexError("Leaf index out of range")
+        proof = []
+        idx = leaf_index
+        for layer in self.layers[:-1]:
+            is_right = (idx % 2 == 1)
+            sibling_idx = idx - 1 if is_right else idx + 1
+            if sibling_idx < len(layer):
+                sibling = layer[sibling_idx]
+            else:
+                sibling = layer[idx]
+            proof.append({
+                "sibling": sibling,
+                "position": "left" if is_right else "right"
+            })
+            idx = idx // 2
+        return proof
+
+    @staticmethod
+    def verify_inclusion_proof(leaf_hash: str, proof: List[Dict[str, Any]], expected_root: str) -> bool:
+        """Verifies an inclusion proof against an expected Merkle root."""
+        current = leaf_hash
+        for step in proof:
+            sibling = step["sibling"]
+            if step["position"] == "left":
+                current = sha256_hex(sibling + current)
+            else:
+                current = sha256_hex(current + sibling)
+        return current == expected_root
+
 
 class SwarmFlightRecorder:
     def __init__(self, log_path: str = FLIGHT_LOG_PATH):

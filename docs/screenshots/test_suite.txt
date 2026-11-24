@@ -1,0 +1,16 @@
+test_capability_auction_engine (test_hydra.TestHydraMeshQuantum.test_capability_auction_engine) ... ok
+test_daemon_heartbeat_state (test_hydra.TestHydraMeshQuantum.test_daemon_heartbeat_state) ... ok
+test_disimage_half_block_rasterizer (test_hydra.TestHydraMeshQuantum.test_disimage_half_block_rasterizer) ... ok
+test_disimage_png_encoding (test_hydra.TestHydraMeshQuantum.test_disimage_png_encoding) ... ok
+test_disimage_svg_export (test_hydra.TestHydraMeshQuantum.test_disimage_svg_export) ... ok
+test_hardened_bridge_and_agent_dispatch (test_hydra.TestHydraMeshQuantum.test_hardened_bridge_and_agent_dispatch) ... ok
+test_mcp_server_protocol (test_hydra.TestHydraMeshQuantum.test_mcp_server_protocol) ... ok
+test_merkle_flight_recorder (test_hydra.TestHydraMeshQuantum.test_merkle_flight_recorder) ... ok
+test_nocturnal_synthesis_engine (test_hydra.TestHydraMeshQuantum.test_nocturnal_synthesis_engine) ... ok
+test_telemetry_and_grokbot_audit (test_hydra.TestHydraMeshQuantum.test_telemetry_and_grokbot_audit) ... ok
+test_triadic_consensus_engine (test_hydra.TestHydraMeshQuantum.test_triadic_consensus_engine) ... ok
+
+----------------------------------------------------------------------
+Ran 11 tests in 1.633s
+
+OK

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0d1117;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro", "Segoe UI", Roboto, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 30px;
+    min-height: 100vh;
+  }
+  .window {
+    width: 960px;
+    max-width: 100%;
+    background: #161b22;
+    border-radius: 12px;
+    border: 1px solid #30363d;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.05);
+    overflow: hidden;
+  }
+  .titlebar {
+    background: #21262d;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #30363d;
+    position: relative;
+  }
+  .traffic-lights {
+    display: flex;
+    gap: 8px;
+    z-index: 2;
+  }
+  .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+  }
+  .dot-red { background: #ff5f56; border: 1px solid #e0443e; }
+  .dot-yellow { background: #ffbd2e; border: 1px solid #dea123; }
+  .dot-green { background: #27c93f; border: 1px solid #1aab29; }
+  .title {
+    position: absolute;
+    left: 0; right: 0;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 500;
+    color: #8b949e;
+    letter-spacing: -0.2px;
+  }
+  .command-bar {
+    background: #0d1117;
+    padding: 10px 20px;
+    border-bottom: 1px solid #21262d;
+    font-family: "SF Mono", Menlo, Consolas, Monaco, monospace;
+    font-size: 13px;
+    color: #58a6ff;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .command-prompt { color: #7ee787; font-weight: bold; }
+  .content {
+    padding: 20px 24px;
+    font-family: "SF Mono", Menlo, Consolas, Monaco, monospace;
+    font-size: 13px;
+    line-height: 1.55;
+    color: #c9d1d9;
+    white-space: pre-wrap;
+    word-break: break-all;
+    background: #0d1117;
+  }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  .badge-pass { background: rgba(35, 134, 54, 0.2); color: #3fb950; border: 1px solid rgba(63, 185, 80, 0.4); }
+  .badge-quantum { background: rgba(163, 113, 247, 0.2); color: #d2a8ff; border: 1px solid rgba(163, 113, 247, 0.4); }
+</style>
+</head>
+<body>
+<div class="window">
+  <div class="titlebar">
+    <div class="traffic-lights">
+      <div class="dot dot-red"></div>
+      <div class="dot dot-yellow"></div>
+      <div class="dot dot-green"></div>
+    </div>
+    <div class="title">Autonomous Capability Dutch Auction — HYDRA-MESH v2.0-QUANTUM</div>
+  </div>
+  <div class="command-bar">
+    <span class="command-prompt">lovelogic@m4-max hydra-mesh %</span>
+    <span>hydra auction --task 'Refactor Disimage IPC to POSIX Shared Memory'</span>
+  </div>
+  <div class="content">[CAPABILITY AUCTION]</span> Task: Refactor Disimage IPC to POSIX Shared Memory
+  <span style="font-weight:bold;">Winning Agent:</span> DevTheDude</span> (agent-5e72212f)
+  <span style="font-weight:bold;">Lease Hash:</span> f951a1eba8c42925aa105d7def92c62d39d74c8bd351842b70cc61fdcabd4652</span>
+  <span style="font-weight:bold;">Bid Score:</span> 6.44 (Est Latency: 15ms, Cost: 1200t)
+
+── Competing Bids ──</span>
+  • DevTheDude             : Score 6.44   | Affinity 0.85 | Latency 15ms
+  • Telegram Orchestrator  : Score 3.12   | Affinity 0.35 | Latency 19ms
+  • Discord Orchestrator   : Score 2.84   | Affinity 0.35 | Latency 20ms
+  • Slack Orchestrator     : Score 2.6    | Affinity 0.35 | Latency 21ms
+  • Hermes                 : Score 1.45   | Affinity 0.35 | Latency 37ms
+</div>
+</div>
+</body>
+</html>
