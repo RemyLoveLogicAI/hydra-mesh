@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hydra-mesh"
+version = "1.0.0"
+description = "Distributed Multi-Channel Agent Hivemind, Disimage Terminal Cockpit & MCP Gateway"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [
+    {name = "Remy / LoveLogicAI LLC", email = "remy@lovelogic.ai"},
+    {name = "DevTheDude", email = "dev@lovelogic.ai"}
+]
+keywords = ["ai-agents", "tui", "disimage", "mcp", "terminal-graphics", "hivemind", "openbot"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: MacOS :: MacOS X",
+    "Topic :: System :: Monitoring",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence"
+]
+
+[project.scripts]
+hydra = "hydra.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["hydra*"]

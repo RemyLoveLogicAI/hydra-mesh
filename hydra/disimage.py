@@ -1,0 +1,149 @@
+"""
+Disimage Terminal Graphics Engine
+Pure-Python 24-bit TrueColor rasterizer and PNG stream encoder.
+Supports iTerm2 inline images, Kitty graphics protocol, and ANSI Half-block fallback.
+"""
+
+import math
+import zlib
+import struct
+import base64
+
+def create_png(width: int, height: int, rgb_buffer: bytearray) -> bytes:
+    """Encodes raw RGB bytearray (width * height * 3) into valid PNG bytes."""
+    raw_scanlines = bytearray()
+    row_bytes = width * 3
+    for y in range(height):
+        raw_scanlines.append(0)  # Filter type 0 (None)
+        start = y * row_bytes
+        raw_scanlines.extend(rgb_buffer[start:start + row_bytes])
+
+    compressed = zlib.compress(bytes(raw_scanlines), 9)
+
+    def png_chunk(tag: bytes, data: bytes) -> bytes:
+        return struct.pack(">I", len(data)) + tag + data + struct.pack(">I", zlib.crc32(tag + data) & 0xFFFFFFFF)
+
+    png = b"\x89PNG\r\n\x1a\n"
+    png += png_chunk(b"IHDR", struct.pack(">IIBBBBB", width, height, 8, 2, 0, 0, 0))
+    png += png_chunk(b"IDAT", compressed)
+    png += png_chunk(b"IEND", b"")
+    return png
+
+
+class DisimageRenderer:
+    """Multi-protocol terminal graphics engine."""
+
+    @staticmethod
+    def render_iterm2(png_bytes: bytes) -> str:
+        b64 = base64.b64encode(png_bytes).decode('ascii')
+        return f"\033]1337;File=inline=1;width=auto;height=auto:{b64}\a\n"
+
+    @staticmethod
+    def render_kitty(png_bytes: bytes, width: int, height: int) -> str:
+        b64 = base64.b64encode(png_bytes).decode('ascii')
+        return f"\033_Ga=T,f=100,s={width},v={height},m=0;{b64}\033\\\n"
+
+    @staticmethod
+    def render_half_block(rgb_buffer: bytearray, width: int, height: int) -> str:
+        """Universal 24-bit ANSI TrueColor half-block rasterizer."""
+        out = []
+        for y in range(0, height, 2):
+            line = []
+            for x in range(width):
+                top_idx = (y * width + x) * 3
+                r1, g1, b1 = rgb_buffer[top_idx], rgb_buffer[top_idx + 1], rgb_buffer[top_idx + 2]
+                if y + 1 < height:
+                    bot_idx = ((y + 1) * width + x) * 3
+                    r2, g2, b2 = rgb_buffer[bot_idx], rgb_buffer[bot_idx + 1], rgb_buffer[bot_idx + 2]
+                else:
+                    r2, g2, b2 = 0, 0, 0
+                line.append(f"\033[38;2;{r1};{g1};{b1}m\033[48;2;{r2};{g2};{b2}m▀\033[0m")
+            out.append("".join(line))
+        return "\n".join(out) + "\n"
+
+
+def generate_swarm_radar_image(width: int = 72, height: int = 36, pulse_tick: int = 0) -> bytearray:
+    """Synthesizes circular swarm radar buffer with interconnected agent nodes."""
+    buffer = bytearray(width * height * 3)
+    cx = width / 2.0
+    cy = height / 2.0
+    max_radius = min(cx, cy) - 2.0
+
+    # Background grid
+    for y in range(height):
+        for x in range(width):
+            idx = (y * width + x) * 3
+            if x % 12 == 0 or y % 6 == 0:
+                buffer[idx] = 15
+                buffer[idx + 1] = 25
+                buffer[idx + 2] = 38
+            else:
+                buffer[idx] = 5
+                buffer[idx + 1] = 8
+                buffer[idx + 2] = 14
+
+    def set_pixel(px: float, py: float, r: int, g: int, b: int, alpha: float = 1.0):
+        if 0 <= px < width and 0 <= py < height:
+            idx = (int(py) * width + int(px)) * 3
+            buffer[idx] = int(buffer[idx] * (1.0 - alpha) + r * alpha)
+            buffer[idx + 1] = int(buffer[idx + 1] * (1.0 - alpha) + g * alpha)
+            buffer[idx + 2] = int(buffer[idx + 2] * (1.0 - alpha) + b * alpha)
+
+    def draw_circle(ox: float, oy: float, radius: float, r: int, g: int, b: int):
+        steps = int(2 * math.pi * radius * 1.5) + 8
+        for i in range(steps):
+            theta = (i / steps) * 2 * math.pi
+            px = ox + radius * math.cos(theta) * 1.8
+            py = oy + radius * math.sin(theta)
+            set_pixel(px, py, r, g, b, 0.75)
+
+    for r_ratio in [0.3, 0.6, 0.9]:
+        draw_circle(cx, cy, max_radius * r_ratio, 25, 55, 80)
+
+    angle = (pulse_tick * 0.15) % (2 * math.pi)
+    for dist in range(int(max_radius)):
+        sx = cx + dist * math.cos(angle) * 1.8
+        sy = cy + dist * math.sin(angle)
+        set_pixel(sx, sy, 0, 255, 180, 0.5)
+
+    nodes = [
+        {"name": "REMY", "angle": 0, "dist": 0.0, "color": (255, 215, 0)},
+        {"name": "DEV", "angle": -math.pi/2, "dist": 0.55, "color": (0, 255, 200)},
+        {"name": "TEL", "angle": -math.pi/6, "dist": 0.75, "color": (0, 180, 255)},
+        {"name": "SLK", "angle": math.pi/4, "dist": 0.75, "color": (224, 30, 90)},
+        {"name": "DSC", "angle": 3*math.pi/4, "dist": 0.75, "color": (88, 101, 242)},
+        {"name": "HER", "angle": 7*math.pi/6, "dist": 0.65, "color": (255, 140, 0)},
+    ]
+
+    for node in nodes:
+        nx = cx + node["dist"] * max_radius * math.cos(node["angle"]) * 1.8
+        ny = cy + node["dist"] * max_radius * math.sin(node["angle"])
+        node["px"] = nx
+        node["py"] = ny
+
+        if node["dist"] > 0:
+            for s in range(20):
+                t = s / 20.0
+                lx = cx + (nx - cx) * t
+                ly = cy + (ny - cy) * t
+                cr, cg, cb = node["color"]
+                set_pixel(lx, ly, int(cr * 0.35), int(cg * 0.35), int(cb * 0.35), 0.45)
+
+    outer = [n for n in nodes if n["dist"] > 0]
+    for i in range(len(outer)):
+        n1 = outer[i]
+        n2 = outer[(i + 1) % len(outer)]
+        for s in range(16):
+            t = s / 16.0
+            lx = n1["px"] + (n2["px"] - n1["px"]) * t
+            ly = n1["py"] + (n2["py"] - n1["py"]) * t
+            set_pixel(lx, ly, 40, 75, 100, 0.35)
+
+    for node in nodes:
+        nx, ny = node["px"], node["py"]
+        cr, cg, cb = node["color"]
+        for dx in range(-1, 2):
+            for dy in range(-1, 2):
+                set_pixel(nx + dx, ny + dy, cr, cg, cb, 0.95)
+
+    return buffer
