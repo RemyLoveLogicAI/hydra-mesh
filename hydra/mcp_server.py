@@ -1,11 +1,13 @@
 """
-HYDRA Model Context Protocol (MCP) Server
-Standard stdio JSON-RPC 2.0 MCP server for AI IDEs (Claude, Cursor, Gemini, Antigravity).
+HYDRA Model Context Protocol (MCP) Server (v2.0.0 Quantum)
 Exposes tools:
 - get_swarm_status: Live telemetry, roster, and kernel state
 - run_skeptic_audit: Grokbot reality audit and port hygiene
 - dispatch_action: Direct task injection into the hivemind
 - export_topology_svg: Generates standalone SVG vector visualization of the swarm
+- run_capability_auction: Executes autonomous Dutch auction for a task
+- verify_merkle_flight_log: Verifies cryptographic integrity of the flight recorder
+- run_nocturnal_synthesis: Generates counterfactual speculative mutations
 """
 
 import sys
@@ -13,6 +15,9 @@ import json
 from hydra.telemetry import get_system_telemetry, run_grokbot_audit
 from hydra.bridge import HydraBridge
 from hydra.disimage import generate_swarm_svg
+from hydra.auction import CapabilityAuctionEngine
+from hydra.flight_recorder import SwarmFlightRecorder
+from hydra.dreamer import NocturnalSynthesisEngine
 
 TOOLS = [
     {
@@ -55,6 +60,33 @@ TOOLS = [
                 "height": {"type": "integer", "description": "Canvas height (default 400)"}
             }
         }
+    },
+    {
+        "name": "run_capability_auction",
+        "description": "Executes autonomous capability Dutch auction across agents to determine optimal task lease.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "task": {"type": "string", "description": "Task description to auction"}
+            },
+            "required": ["task"]
+        }
+    },
+    {
+        "name": "verify_merkle_flight_log",
+        "description": "Verifies cryptographic integrity of the swarm's Merkle flight recorder.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {}
+        }
+    },
+    {
+        "name": "run_nocturnal_synthesis",
+        "description": "Executes exploratory counterfactual hypothesis simulation cycle.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {}
+        }
     }
 ]
 
@@ -69,7 +101,7 @@ def handle_request(req: dict) -> dict:
             "result": {
                 "protocolVersion": "2024-11-05",
                 "capabilities": {"tools": {}},
-                "serverInfo": {"name": "hydra-mcp", "version": "1.1.0"}
+                "serverInfo": {"name": "hydra-mcp", "version": "2.0.0"}
             }
         }
     elif method == "tools/list":
@@ -121,6 +153,30 @@ def handle_request(req: dict) -> dict:
                 "jsonrpc": "2.0",
                 "id": req_id,
                 "result": {"content": [{"type": "text", "text": svg}]}
+            }
+        elif tool_name == "run_capability_auction":
+            engine = CapabilityAuctionEngine()
+            res = engine.run_auction(args.get("task", "Generic Swarm Task"))
+            return {
+                "jsonrpc": "2.0",
+                "id": req_id,
+                "result": {"content": [{"type": "text", "text": json.dumps(res, indent=2)}]}
+            }
+        elif tool_name == "verify_merkle_flight_log":
+            recorder = SwarmFlightRecorder()
+            res = recorder.verify_event_integrity()
+            return {
+                "jsonrpc": "2.0",
+                "id": req_id,
+                "result": {"content": [{"type": "text", "text": json.dumps(res, indent=2)}]}
+            }
+        elif tool_name == "run_nocturnal_synthesis":
+            dreamer = NocturnalSynthesisEngine()
+            res = dreamer.run_dream_cycle()
+            return {
+                "jsonrpc": "2.0",
+                "id": req_id,
+                "result": {"content": [{"type": "text", "text": json.dumps(res, indent=2)}]}
             }
         else:
             return {
