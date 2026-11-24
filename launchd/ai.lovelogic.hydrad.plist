@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>ai.lovelogic.hydrad</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/opt/homebrew/bin/python3</string>
+        <string>-m</string>
+        <string>hydra.daemon</string>
+    </array>
+    <key>WorkingDirectory</key>
+    <string>/Users/lovelogic/OpenBot/Agents/agent-5e72212f-6ac8-4ffc-90b6-90fc9b7bf1d5/hydra-mesh</string>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PYTHONPATH</key>
+        <string>/Users/lovelogic/OpenBot/Agents/agent-5e72212f-6ac8-4ffc-90b6-90fc9b7bf1d5/hydra-mesh</string>
+    </dict>
+    <key>RunAtLoad</key>
+    <false/>
+    <key>KeepAlive</key>
+    <true/>
+    <key>StandardOutPath</key>
+    <string>/Users/lovelogic/OpenBot/Agents/agent-5e72212f-6ac8-4ffc-90b6-90fc9b7bf1d5/hydra-mesh/hydrad.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/lovelogic/OpenBot/Agents/agent-5e72212f-6ac8-4ffc-90b6-90fc9b7bf1d5/hydra-mesh/hydrad.err</string>
+</dict>
+</plist>

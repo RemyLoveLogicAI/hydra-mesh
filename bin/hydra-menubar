@@ -1,0 +1,30 @@
+#!/bin/bash
+# HYDRA Menu Bar Extra (BitBar / SwiftBar / xbar compatible script)
+# Displays real-time Swarm Quorum, Skeptic Score, and M4 Hardware state in the macOS Menu Bar.
+
+STATE_FILE="/Users/lovelogic/OpenBot/Shared/hydra_daemon_state.json"
+REPO_DIR="/Users/lovelogic/OpenBot/Agents/agent-5e72212f-6ac8-4ffc-90b6-90fc9b7bf1d5/hydra-mesh"
+
+if [ ! -f "$STATE_FILE" ]; then
+    echo "⚡ HYDRA: OFFLINE | color=#64748b"
+    echo "---"
+    echo "Start Daemon | bash='$REPO_DIR/hydra/daemon.py' terminal=false"
+    exit 0
+fi
+
+SCORE=$(python3 -c "import json; d=json.load(open('$STATE_FILE')); print(d.get('skeptic_score', 0))" 2>/dev/null || echo "0")
+AGENTS=$(python3 -c "import json; d=json.load(open('$STATE_FILE')); print(d.get('swarm', {}).get('active_agents', 0))" 2>/dev/null || echo "0")
+LOAD1=$(python3 -c "import json; d=json.load(open('$STATE_FILE')); print(f\"{d.get('hardware', {}).get('load', [0])[0]:.2f}\")" 2>/dev/null || echo "0")
+
+# Menu Bar Headline
+echo "⚡ HYDRA: ${AGENTS}A | ${SCORE}% | L:${LOAD1} | color=#00f0ff"
+echo "---"
+echo "HYDRA-MESH Hivemind Cockpit | href=https://hydra-mesh-2027-cockpit-distributed-multi-bsajkkhbyx.openbot.site"
+echo "---"
+echo "Hardware: Apple M4 (Darwin ARM64) | color=#94a3b8"
+echo "Load Avg: ${LOAD1} | color=#22c55e"
+echo "Skeptic Rating: ${SCORE}/100 | color=#eab308"
+echo "Swarm Roster: 6 Active Agents | color=#38bdf8"
+echo "---"
+echo "Launch TUI Cockpit | bash='osascript' param1='-e' param2='tell application \"Terminal\" to do script \"cd $REPO_DIR && python3 -m hydra.cli status\"' terminal=false"
+echo "Run Skeptic Audit | bash='osascript' param1='-e' param2='tell application \"Terminal\" to do script \"cd $REPO_DIR && python3 -m hydra.cli audit\"' terminal=false"

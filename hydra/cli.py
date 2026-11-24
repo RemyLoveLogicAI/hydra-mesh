@@ -7,6 +7,8 @@ Subcommands:
 - bridge    : Inspect multi-channel status (iMessage, Telegram, Slack)
 - benchmark : Run Disimage rasterizer FPS and throughput micro-benchmarks
 - export    : Export swarm topology as PNG or SVG vector file
+- daemon    : Run persistent background observer daemon
+- consensus : Run triadic dialectic consensus deliberation on an RFC
 - mcp       : Run stdio JSON-RPC MCP server
 - serve     : Run local WebUI dashboard
 """
@@ -21,6 +23,8 @@ from hydra.bridge import HydraBridge
 from hydra.tui import run_tui
 from hydra.webui import serve_webui
 from hydra.mcp_server import run_mcp_server
+from hydra.daemon import run_daemon
+from hydra.consensus import DialecticalConsensusEngine
 
 def cmd_status(args):
     width, height = 72, 36
@@ -56,8 +60,12 @@ def cmd_audit(args):
 
 def cmd_bridge(args):
     bridge = HydraBridge()
-    matrix = bridge.get_channel_matrix()
-    print(json.dumps(matrix, indent=2))
+    if args.dispatch:
+        res = bridge.dispatch_to_agent(args.dispatch[0], args.dispatch[1])
+        print(json.dumps(res, indent=2))
+    else:
+        matrix = bridge.get_channel_matrix()
+        print(json.dumps(matrix, indent=2))
 
 def cmd_benchmark(args):
     frames = args.frames
@@ -90,6 +98,18 @@ def cmd_export(args):
             f.write(png)
         print(f"\033[1;32m✓ Exported PNG ({len(png)} bytes) to {out_path}\033[0m")
 
+def cmd_daemon(args):
+    run_daemon(interval=args.interval, once=args.once)
+
+def cmd_consensus(args):
+    topic = args.topic or "Decentralized Swarm Task Allocation & Event Ingress Protocol (2027)"
+    engine = DialecticalConsensusEngine()
+    receipt = engine.deliberate(topic)
+    if args.json:
+        print(json.dumps(receipt, indent=2))
+    else:
+        print(engine.format_markdown_ledger(receipt))
+
 def cmd_tui(args):
     run_tui(iterations=args.iterations, delay=args.delay)
 
@@ -110,7 +130,8 @@ def main():
     p_audit.add_argument("--json", action="store_true", help="Output as JSON")
     p_audit.set_defaults(func=cmd_audit)
 
-    p_bridge = sub.add_parser("bridge", help="Inspect multi-channel connection matrix")
+    p_bridge = sub.add_parser("bridge", help="Inspect multi-channel connection matrix or dispatch message")
+    p_bridge.add_argument("--dispatch", nargs=2, metavar=("AGENT", "MSG"), help="Dispatch message to agent (e.g. telegram 'status')")
     p_bridge.set_defaults(func=cmd_bridge)
 
     p_bench = sub.add_parser("benchmark", help="Run Disimage rasterizer performance benchmark")
@@ -121,6 +142,16 @@ def main():
     p_export.add_argument("--format", choices=["svg", "png"], default="svg", help="Export format")
     p_export.add_argument("-o", "--output", help="Target output file path")
     p_export.set_defaults(func=cmd_export)
+
+    p_daemon = sub.add_parser("daemon", help="Run persistent background observer daemon")
+    p_daemon.add_argument("--interval", type=float, default=3.0, help="Heartbeat interval in seconds")
+    p_daemon.add_argument("--once", action="store_true", help="Run a single heartbeat and exit")
+    p_daemon.set_defaults(func=cmd_daemon)
+
+    p_consensus = sub.add_parser("consensus", help="Run triadic dialectic consensus deliberation on an RFC")
+    p_consensus.add_argument("--topic", help="RFC topic to deliberate")
+    p_consensus.add_argument("--json", action="store_true", help="Output as raw JSON receipt")
+    p_consensus.set_defaults(func=cmd_consensus)
 
     p_tui = sub.add_parser("tui", help="Launch interactive live TUI cockpit")
     p_tui.add_argument("--iterations", type=int, default=1, help="Max refresh iterations (0 for infinite)")
